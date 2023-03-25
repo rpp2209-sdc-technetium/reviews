@@ -1,29 +1,31 @@
-const { Client } = require('pg')
-const format = require('pg-format')
+const { Pool } = require('pg')
 
-const client = new Client({
+const pool = new Pool({
     host: 'localhost',
     port: 5432,
     password: 'wsy666',
     user: 'postgres',
-    database: 'reviews'
+    database: 'reviews',
+    max: 30,
+    idleTimeoutMillis: 5000,
+    allowExitOnIdle: true
 })
-client.connect()
-const searchpid = (product_id, limit, order) => {
-    return client.query(`select 
+
+const searchpid = (product_id, limit, order, offset = 0) => {
+    return pool.query(`select 
     reviews.id as review_id , rating, summary ,recommend, response, body, date, reviewer_name, helpfulness,
     reviews_photos.id as id,url
     from reviews left join reviews_photos 
     on reviews.id = reviews_photos.review_id 
-    where reviews.product_id =${product_id} and reviews.reported =false ORDER BY ${order} desc,review_id desc limit ${limit}`).then((val) => {
+    where reviews.product_id =${product_id} and reviews.reported =false ORDER BY ${order} desc,review_id desc limit ${limit} offset ${offset}`).then((val) => {
         if (!val.rows.length) {
             return []
         } else {
             let value = val.rows
             const res = []
             for (let i = 0; i < value.length; i++) {
-                const { review_id, rating, summary, response, body, date, reviewer_name, helpfulness, ...photos } = value[i]
-                const b = { review_id, rating, summary, response, body, date, reviewer_name, helpfulness, photos: [] }
+                const { review_id, rating, summary, response, body, recommend, date, reviewer_name, helpfulness, ...photos } = value[i]
+                const b = { review_id, rating, summary, response, body, date, recommend, reviewer_name, helpfulness, photos: [] }
                 if (i === 0 || review_id !== res[res.length - 1].review_id) {
                     res.push(b)
                     if (photos.id !== null) {
@@ -40,7 +42,7 @@ const searchpid = (product_id, limit, order) => {
     })
 }
 const searchmeta = (product_id) => {
-    return client.query(`select reviews.id as rid,rating, name,characteristics.id, value,recommend
+    return pool.query(`select reviews.id as rid,rating, name,characteristics.id, value,recommend
     from reviews left join characteristic_reviews on reviews.id = characteristic_reviews.review_id
     left join characteristics on characteristic_reviews.characteristic_id = characteristics.id
     where reviews.product_id = ${product_id}`).then((res) => {
@@ -90,8 +92,9 @@ const searchmeta = (product_id) => {
 
 }
 const insert = (product_id, rating, summary, body, recommend, name, email, photos, characteristics) => {
+    
     async function insertdata() {
-        await client.connect()
+        const client = await pool.connect()
         try {
             await client.query('BEGIN')
             let a = await client.query(`insert into reviews(product_id,rating,recommend,reviewer_name,summary,body,reviewer_email)
@@ -119,7 +122,7 @@ const insert = (product_id, rating, summary, body, recommend, name, email, photo
             await client.query('ROLLBACK')
             console.error(e)
         } finally {
-            await client.end()
+            await client.release()
         }
     }
     return insertdata()
@@ -128,10 +131,10 @@ const insert = (product_id, rating, summary, body, recommend, name, email, photo
 // console.log(a)
 // })
 const makehelp = (reveiw_id) => {
-    return client.query(`UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
+    return pool.query(`UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
 }
 const report = (reveiw_id) => {
-    return client.query(`UPDATE reviews SET reported = true where id =${reveiw_id} returning reported`)
+    return pool.query(`UPDATE reviews SET reported = true where id =${reveiw_id} returning reported`)
 }
 module.exports = {
     searchmeta, searchpid, insert, makehelp, report
