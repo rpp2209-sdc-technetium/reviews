@@ -1,3 +1,4 @@
+const { doesNotMatch } = require('assert');
 const express = require('express')
 const path = require('path');
 const { searchmeta, searchpid, insert, makehelp, report } = require('./db')
@@ -50,6 +51,7 @@ app.post('/reviews', (req, res, next) => {
     })
 })
 app.put('/reviews/:review_id/helpful', (req, res) => {
+    console.log(req.params.review_id)
     makehelp(req.params.review_id).then(() => {
         res.sendStatus(204)
     }).catch((err) => {

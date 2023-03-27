@@ -6,40 +6,46 @@ const pool = new Pool({
     password: 'wsy666',
     user: 'postgres',
     database: 'reviews',
-    max: 30,
-    idleTimeoutMillis: 5000,
+    max: 1,
+    idleTimeoutMillis: 1,
     allowExitOnIdle: true
 })
 
 const searchpid = (product_id, limit, order, offset = 0) => {
-    return pool.query(`select 
-    reviews.id as review_id , rating, summary ,recommend, response, body, date, reviewer_name, helpfulness,
-    reviews_photos.id as id,url
-    from reviews left join reviews_photos 
-    on reviews.id = reviews_photos.review_id 
-    where reviews.product_id =${product_id} and reviews.reported =false ORDER BY ${order} desc,review_id desc limit ${limit} offset ${offset}`).then((val) => {
-        if (!val.rows.length) {
-            return []
-        } else {
-            let value = val.rows
-            const res = []
-            for (let i = 0; i < value.length; i++) {
-                const { review_id, rating, summary, response, body, recommend, date, reviewer_name, helpfulness, ...photos } = value[i]
-                const b = { review_id, rating, summary, response, body, date, recommend, reviewer_name, helpfulness, photos: [] }
-                if (i === 0 || review_id !== res[res.length - 1].review_id) {
-                    res.push(b)
-                    if (photos.id !== null) {
-                        res[i].photos.push(
-                            photos
-                        )
-                    }
+    return pool.connect()
+        .then((client) => {
+            return client.query(`select 
+        reviews.id as review_id , rating, summary ,recommend, response, body, date, reviewer_name, helpfulness,
+        reviews_photos.id as id,url
+        from reviews left join reviews_photos 
+        on reviews.id = reviews_photos.review_id 
+        where reviews.product_id =${product_id} and reviews.reported =false ORDER BY ${order} desc,review_id desc limit ${limit} offset ${offset}`).then((val) => {
+
+                client.release()
+                if (!val.rows.length) {
+                    return []
                 } else {
-                    res[res.length - 1].photos.push(photos)
+                    let value = val.rows
+                    const res = []
+                    for (let i = 0; i < value.length; i++) {
+                        const { review_id, rating, summary, response, body, recommend, date, reviewer_name, helpfulness, ...photos } = value[i]
+                        const b = { review_id, rating, summary, response, body, date, recommend, reviewer_name, helpfulness, photos: [] }
+                        if (i === 0 || review_id !== res[res.length - 1].review_id) {
+                            res.push(b)
+                            if (photos.id !== null) {
+                                res[i].photos.push(
+                                    photos
+                                )
+                            }
+                        } else {
+                            res[res.length - 1].photos.push(photos)
+                        }
+                    }
+                    return res
                 }
-            }
-            return res
-        }
-    })
+            })
+        })
+
 }
 const searchmeta = (product_id) => {
     return pool.query(`select reviews.id as rid,rating, name,characteristics.id, value,recommend
@@ -92,7 +98,7 @@ const searchmeta = (product_id) => {
 
 }
 const insert = (product_id, rating, summary, body, recommend, name, email, photos, characteristics) => {
-    
+
     async function insertdata() {
         const client = await pool.connect()
         try {
@@ -117,25 +123,35 @@ const insert = (product_id, rating, summary, body, recommend, name, email, photo
             c = c.slice(0, -1)
             await client.query(`insert into characteristic_reviews(characteristic_id,review_id, value) values ${c} returning *`)
             await client.query('COMMIT')
+            client.release()
             return 'ok'
         } catch (e) {
             await client.query('ROLLBACK')
             console.error(e)
         } finally {
-            await client.release()
+
         }
     }
     return insertdata()
 }
+
 // insert(12, 3, 'hahahahfadsfa', 'hihihihi', false, 'ijiddj', 'daa@b.com', ['lo1l', 'lll', 'odfa'], { '1': 3, '2': 2, '3': 1, '4': 1, '5': 1 }).then((a)=>{
 // console.log(a)
 // })
 const makehelp = (reveiw_id) => {
-    return pool.query(`UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
+
+    return pool.query(`explain analyze UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
 }
+makehelp(123).then((res)=>{
+    console.log(res.rows)
+})
 const report = (reveiw_id) => {
     return pool.query(`UPDATE reviews SET reported = true where id =${reveiw_id} returning reported`)
 }
+// makehelp(1).then((vl) => {
+//     console.log(vl.rows)
+// })
+
 module.exports = {
     searchmeta, searchpid, insert, makehelp, report
 
