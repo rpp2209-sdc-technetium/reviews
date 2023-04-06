@@ -1,9 +1,9 @@
 const { Pool } = require('pg')
 
 const pool = new Pool({
-    host: 'localhost',
+    host: 'ec2-3-86-189-63.compute-1.amazonaws.com',
     port: 5432,
-    password: 'wsy666',
+    password: '12345',
     user: 'postgres',
     database: 'reviews',
     max: 1,
@@ -20,7 +20,7 @@ const searchpid = (product_id, limit, order, offset = 0) => {
         from reviews left join reviews_photos 
         on reviews.id = reviews_photos.review_id 
         where reviews.product_id =${product_id} and reviews.reported =false ORDER BY ${order} desc,review_id desc limit ${limit} offset ${offset}`).then((val) => {
-
+            console.log(val)
                 client.release()
                 if (!val.rows.length) {
                     return []
@@ -140,11 +140,9 @@ const insert = (product_id, rating, summary, body, recommend, name, email, photo
 // })
 const makehelp = (reveiw_id) => {
 
-    return pool.query(`explain analyze UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
+    return pool.query(`UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
 }
-makehelp(123).then((res)=>{
-    console.log(res.rows)
-})
+
 const report = (reveiw_id) => {
     return pool.query(`UPDATE reviews SET reported = true where id =${reveiw_id} returning reported`)
 }

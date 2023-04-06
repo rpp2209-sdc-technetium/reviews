@@ -4,6 +4,7 @@ const path = require('path');
 const { searchmeta, searchpid, insert, makehelp, report } = require('./db')
 
 const port = 5000;
+const port1 = 5001;
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({
@@ -51,7 +52,6 @@ app.post('/reviews', (req, res, next) => {
     })
 })
 app.put('/reviews/:review_id/helpful', (req, res) => {
-    console.log(req.params.review_id)
     makehelp(req.params.review_id).then(() => {
         res.sendStatus(204)
     }).catch((err) => {
@@ -67,6 +67,9 @@ app.put('/reviews/:review_id/report', (req, res) => {
 })
 app.listen(port, () => {
     console.log(`Server listening at localhost:${5000}!`);
+});
+app.listen(port1, () => {
+    console.log(`Server listening at localhost:${5001}!`);
 });
 
 

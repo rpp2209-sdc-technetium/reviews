@@ -1,18 +1,19 @@
 import http from 'k6/http';
-import { sleep, check } from 'k6';
-import { Counter } from 'k6/metrics';
+import { randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
 
 // A simple counter for http requests
 export let options = {
-    vus: 2,
-    duration: '1s',
+    vus: 10,
+  duration: "10s",
+  rps: 100
 }
 
 
 
 
 export default function () {
-    http.put('http://localhost:5000/reviews/9878/report');
+    let randomId = randomIntBetween(1,100000)
+    http.get(`http://localhost:5000/reviews?product_id=${randomId}`);
 
 }
 /*{
