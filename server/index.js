@@ -74,10 +74,4 @@ app.put('/reviews/:review_id/report', (req, res) => {
 app.listen(port, () => {
     console.log(`Server listening at localhost:${5000}!`);
 });
-app.listen(port1, () => {
-    console.log(`Server listening at localhost:${5001}!`);
-});
-
-
-
 
