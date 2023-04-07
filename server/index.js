@@ -4,7 +4,6 @@ const path = require('path');
 const { searchmeta, searchpid, insert, makehelp, report } = require('./db')
 
 const port = 5000;
-const port1 = 5001;
 const app = express()
 app.use(express.json())
 app.use(express.urlencoded({
