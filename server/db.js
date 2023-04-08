@@ -1,7 +1,7 @@
 const { Pool } = require('pg')
 
 const pool = new Pool({
-    host: 'ec2-18-233-147-1.compute-1.amazonaws.com',
+    host: 'ec2-54-152-115-221.compute-1.amazonaws.com',
     port: 5432,
     password: '12345',
     user: 'postgres',
@@ -20,7 +20,6 @@ const searchpid = (product_id, limit, order, offset = 0) => {
         from reviews left join reviews_photos 
         on reviews.id = reviews_photos.review_id 
         where reviews.product_id =${product_id} and reviews.reported =false ORDER BY ${order} desc,review_id desc limit ${limit} offset ${offset}`).then((val) => {
-            console.log(val)
                 client.release()
                 if (!val.rows.length) {
                     return []

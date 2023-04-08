@@ -14,7 +14,6 @@ app.get('/', (req, res, next) => {
     res.send('hahahha')
 })
 app.get('/reviews', (req, res, next) => {
-    console.log('eieii')
     let page = req.query.page ? req.query.page - 1 : 0
     let count = req.query.count ? req.query.count : 5
     let order
@@ -27,14 +26,12 @@ app.get('/reviews', (req, res, next) => {
     }
     const offset = page * count
     searchpid(req.query.product_id, count, order, offset).then((result) => {
-        console.log('>>>>')
         res.status(200).send({
             product: req.query.product_id,
             page: page,
             count: count,
             result: result
         })
-        console.log('dfs')
     }).catch((err) => {
         res.send(err)
     })
