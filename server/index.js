@@ -13,6 +13,9 @@ app.get('/', (req, res, next) => {
     console.log('ahha')
     res.send('hahahha')
 })
+app.get('/loaderio-ac5440ceba103d9d113d546383d5740b',(req,res)=>{
+    res.send('loaderio-ac5440ceba103d9d113d546383d5740b')
+})
 app.get('/reviews', (req, res, next) => {
     let page = req.query.page ? req.query.page - 1 : 0
     let count = req.query.count ? req.query.count : 5
