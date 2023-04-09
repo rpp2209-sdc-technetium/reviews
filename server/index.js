@@ -47,6 +47,7 @@ app.get('/reviews/meta', (req, res, next) => {
     })
 })
 app.post('/reviews', (req, res, next) => {
+    console.log('>>>',req.body)
     let { product_id, rating, summary, body, recommend, name, email, photos, characteristics } = req.body
     photos = JSON.parse(photos)
     characteristics = JSON.parse(characteristics)

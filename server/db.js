@@ -97,6 +97,7 @@ const searchmeta = (product_id) => {
 
 }
 const insert = (product_id, rating, summary, body, recommend, name, email, photos, characteristics) => {
+    console.log('????',product_id, rating, summary, body, recommend, name, email, photos, characteristics)
 
     async function insertdata() {
         const client = await pool.connect()
