@@ -13,8 +13,8 @@ app.get('/', (req, res, next) => {
     console.log('ahha')
     res.send('hahahha')
 })
-app.get('/loaderio-ac5440ceba103d9d113d546383d5740b',(req,res)=>{
-    res.send('loaderio-ac5440ceba103d9d113d546383d5740b')
+app.get('/loaderio-9a412d2ea598fbd47325f62b9ed646f1',(req,res)=>{
+    res.send('loaderio-9a412d2ea598fbd47325f62b9ed646f1')
 })
 app.get('/reviews', (req, res, next) => {
     let page = req.query.page ? req.query.page - 1 : 0
