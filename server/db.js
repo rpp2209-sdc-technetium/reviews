@@ -140,11 +140,11 @@ const insert = (product_id, rating, summary, body, recommend, name, email, photo
 // })
 const makehelp = (reveiw_id) => {
 
-    return pool.query(`UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id} returning helpfulness`)
+    return pool.query(`UPDATE reviews SET helpfulness = helpfulness + 1 WHERE id = ${reveiw_id}`)
 }
 
 const report = (reveiw_id) => {
-    return pool.query(`UPDATE reviews SET reported = true where id =${reveiw_id} returning reported`)
+    return pool.query(`UPDATE reviews SET reported = true where id =${reveiw_id}`)
 }
 // makehelp(1).then((vl) => {
 //     console.log(vl.rows)
