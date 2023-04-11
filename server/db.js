@@ -47,61 +47,56 @@ const searchpid = (product_id, limit, order, offset = 0) => {
 
 }
 const searchmeta = (product_id) => {
-    return pool.connect()
-        .then((client) => {
-            return client.query(`select reviews.id as rid,rating, name,characteristics.id, value,recommend
-        from reviews left join characteristic_reviews on reviews.id = characteristic_reviews.review_id
-        left join characteristics on characteristic_reviews.characteristic_id = characteristics.id
-        where reviews.product_id = ${product_id}`).then((res) => {
-            client.release()
-                let a = res.rows
-                if (!a.length) {
-                    return []
+    return pool.query(`select reviews.id as rid,rating, name,characteristics.id, value,recommend
+    from reviews left join characteristic_reviews on reviews.id = characteristic_reviews.review_id
+    left join characteristics on characteristic_reviews.characteristic_id = characteristics.id
+    where reviews.product_id = ${product_id}`).then((res) => {
+        let a = res.rows
+        if (!a.length) {
+            return []
+        }
+        const ans = {
+            product_id: product_id,
+            ratings: {
+                '1': 0,
+                '2': 0,
+                '3': 0,
+                '4': 0,
+                '5': 0
+            },
+            recommend: {
+                'true': 0,
+                'false': 0
+            },
+            characteristics: {}
+        }
+        for (let i = 0; i < a.length; i++) {
+            ans.ratings[a[i].rating]++
+            ans.recommend[a[i].recommend]++
+            if (!ans.characteristics[a[i].name]) {
+                ans.characteristics[a[i].name] = {
+                    id: a[i].id,
+                    value: a[i].value
                 }
-                const ans = {
-                    product_id: product_id,
-                    ratings: {
-                        '1': 0,
-                        '2': 0,
-                        '3': 0,
-                        '4': 0,
-                        '5': 0
-                    },
-                    recommend: {
-                        'true': 0,
-                        'false': 0
-                    },
-                    characteristics: {}
-                }
-                for (let i = 0; i < a.length; i++) {
-                    ans.ratings[a[i].rating]++
-                    ans.recommend[a[i].recommend]++
-                    if (!ans.characteristics[a[i].name]) {
-                        ans.characteristics[a[i].name] = {
-                            id: a[i].id,
-                            value: a[i].value
-                        }
-                    } else {
-                        ans.characteristics[a[i].name].value += a[i].value
-                    }
-                }
-                let l = Object.keys(ans.characteristics).length
-                ans.recommend.true /= l
-                ans.recommend.false /= l
-                let c = res.rows.length / l
-                for (let a in ans.ratings) {
-                    ans.ratings[a] /= l
-                }
-                for (let a in ans.characteristics) {
-                    ans.characteristics[a].value /= c
-                }
-                return ans
-            })
-
-        })
-
+            } else {
+                ans.characteristics[a[i].name].value += a[i].value
+            }
+        }
+        let l = Object.keys(ans.characteristics).length
+        ans.recommend.true /= l
+        ans.recommend.false /= l
+        let c = res.rows.length / l
+        for (let a in ans.ratings) {
+            ans.ratings[a] /= l
+        }
+        for (let a in ans.characteristics) {
+            ans.characteristics[a].value /= c
+        }
+        return ans
+    })
 
 }
+
 const insert = (product_id, rating, summary, body, recommend, name, email, photos, characteristics) => {
 
     async function insertdata() {
