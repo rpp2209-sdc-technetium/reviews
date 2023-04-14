@@ -1,7 +1,7 @@
 const { Pool } = require('pg')
 
 const pool = new Pool({
-    host: 'ec2-44-202-15-209.compute-1.amazonaws.com',
+    host: 'ec2-54-91-206-5.compute-1.amazonaws.com',
     port: 5432,
     password: '12345',
     user: 'postgres',
@@ -47,7 +47,7 @@ const searchpid = (product_id, limit, order, offset = 0) => {
 
 }
 const searchmeta = (product_id) => {
-    return pool.query(`select reviews.id as rid,rating, name,characteristics.id, value,recommend
+    return pool.query(`explain analyze select reviews.id as rid,rating, name,characteristics.id, value,recommend
     from reviews left join characteristic_reviews on reviews.id = characteristic_reviews.review_id
     left join characteristics on characteristic_reviews.characteristic_id = characteristics.id
     where reviews.product_id = ${product_id}`).then((res) => {
