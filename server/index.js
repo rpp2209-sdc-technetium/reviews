@@ -75,7 +75,6 @@ app.get('/reviews/meta', (req, res, next) => {
         res.oo=result
         return setmeta(req.query.product_id,JSON.stringify(result))
     }).then((w)=>{
-        console.log(w)
         res.status(200).send(res.oo)
     }).catch((err) => {
         res.send(err)
