@@ -1,6 +1,7 @@
 const { doesNotMatch } = require('assert');
 const express = require('express')
 const path = require('path');
+const { saveredis, readredis, getmeta, setmeta } = require('./redis')
 const { searchmeta, searchpid, insert, makehelp, report } = require('./db')
 
 const port = 5000;
@@ -13,7 +14,7 @@ app.get('/', (req, res, next) => {
     console.log('ahha')
     res.send('hahahha')
 })
-app.get('/loaderio-4720528a1335bc0a81737f82aff477dd',(req,res)=>{
+app.get('/loaderio-4720528a1335bc0a81737f82aff477dd', (req, res) => {
     res.send('loaderio-4720528a1335bc0a81737f82aff477dd')
 })
 app.get('/reviews', (req, res, next) => {
@@ -28,20 +29,54 @@ app.get('/reviews', (req, res, next) => {
         order = 'review_id'
     }
     const offset = page * count
+    let red = order + page + count + req.query.product_id
+
+    readredis(red).then((val) => {
+
+        if (!val) {
+            req.t = { order, page, count, offset, red }
+            next()
+        } else {
+            res.send(JSON.parse(val))
+        }
+    }).catch((err) => {
+        res.send(err)
+    })
+
+}, (req, res, next) => {
+    const { order, page, count, offset, red } = req.t
     searchpid(req.query.product_id, count, order, offset).then((result) => {
-        res.status(200).send({
+        const data = {
             product: req.query.product_id,
             page: page,
             count: count,
             result: result
+        }
+
+        saveredis(red, JSON.stringify(data)).then(() => {
+            res.send(data)
         })
     }).catch((err) => {
         res.send(err)
     })
 })
 app.get('/reviews/meta', (req, res, next) => {
+    getmeta(req.query.product_id).then((a) => {
+        if (!a) {
+            next()
+        } else {
+            res.send(JSON.parse(a))
+        }
+    }).catch((err)=>{
+        res.send(err)
+    })
+}, (req, res, next) => {
     searchmeta(req.query.product_id).then((result) => {
-        res.status(200).send(result)
+        res.oo=result
+        return setmeta(req.query.product_id,JSON.stringify(result))
+    }).then((w)=>{
+        console.log(w)
+        res.status(200).send(res.oo)
     }).catch((err) => {
         res.send(err)
     })
