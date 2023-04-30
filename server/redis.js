@@ -2,13 +2,13 @@ const redis = require('redis');
 //44.203.251.141 
 //url: 'redis://alice:foobared@awesome.redis.server:6380'
 const client = redis.createClient({
-    url: 'redis://44.203.251.141:6379'
+    url: 'redis://3.92.77.117:6379'
 })
 const client1 = redis.createClient({
-    url: 'redis://54.211.64.153:6379'
+    url: 'redis://52.90.37.25:6379'
 })
 const clientmeta =redis.createClient({
-    url: 'redis://3.86.100.146:6379'
+    url: 'redis://18.208.153.152:6379'
 })
 client.on('connect', () => {
     console.log('redis connected')
